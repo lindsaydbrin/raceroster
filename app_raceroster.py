@@ -7,6 +7,7 @@ import numpy as np
 
 
 app = dash.Dash()
+server = app.server
 
 # CSS from Dash tutorial
 app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
