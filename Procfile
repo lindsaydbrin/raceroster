@@ -1,1 +1,1 @@
-web: gunicorn app_raceroster:server
+web: gunicorn app:server
