@@ -16,10 +16,10 @@ colors = {
     'text': '#7FDBFF'
 }
 
-hampton17sprint = pd.read_csv('../Data_output/results_hampton17sprint.csv')
-hampton18sprint = pd.read_csv('../Data_output/results_hampton18sprint.csv')
-rockwood17sprint = pd.read_csv('../Data_output/results_rockwood17sprint.csv')
-rockwood18sprint = pd.read_csv('../Data_output/results_rockwood18sprint.csv')
+hampton17sprint = pd.read_csv('Data_output/results_hampton17sprint.csv')
+hampton18sprint = pd.read_csv('Data_output/results_hampton18sprint.csv')
+rockwood17sprint = pd.read_csv('Data_output/results_rockwood17sprint.csv')
+rockwood18sprint = pd.read_csv('Data_output/results_rockwood18sprint.csv')
 
 available_sports = np.array(['finish', 'swim', 'bike', 'run', 't1', 't2'])
 available_distributions = np.array(['All', 'Gender', 'Division'])
@@ -60,18 +60,18 @@ def thify(value):
     else:
         suffix = 'th'
     word = '{0}{1}'.format(value, suffix)
-    return(word)    
-    
+    return(word)
+
 #---------#
 # Layout
 #---------#
 
 app.layout = html.Div([
-    
+
     html.Br(),
-    
+
     # Header
-        
+
     html.H1(children='Triathlon Comparison Tool',
             style={
                 'textAlign': 'center'
@@ -79,37 +79,37 @@ app.layout = html.Div([
 
     html.H4(children='...because analysis is the 4th sport.',
             style={'textAlign': 'center'}),
-    
+
     html.Br(),
     html.Hr(),
 
-    
+
     # Top text container
     html.Div([
         html.Div([
-            
+
             html.H2('What is this?'),
-            
-            html.P('A triathlon is a race that includes swimming, biking, and running components, as well as transitions in between sports.  Triathletes tend to be an obsessive bunch who get very involved in analyzing and comparing race times - which, in my personal experience, usually involves a browser with multiple open tabs, a calculator (or Spotlight), and frustration that I don\'t have a histogram of all participants\' times. This tool was developed to address that. (Note that many triathletes also claim to do triathlons to eat and drink more, so the motivations are broad.)'),
-            
+
+            html.P('A triathlon is a race that includes swimming, biking, and running components, as well as transitions in between sports.  Triathletes tend to be an obsessive bunch who get very involved in analyzing and comparing race times - which, in my personal experience, usually involves a browser with multiple open tabs, a calculator (or Spotlight), and frustration that I don\'t have a histogram of all participants\' times. This tool was developed to address that. (Note that many triathletes also claim to do triathlons to eat and drink more, so the motivations are broad and wide-ranging.)'),
+
             html.P('You can use this tool to compare triathlon race times between two athletes (or the same athlete between two different races or race years). Use the dropdown menus to select each race, year, and athlete. The athletes\' time will appear on the plots below, along with the times for other athletes in the same race. Data associated with the athlete on the left will be shown in red, and data associated with the athlete on the right will be shown in blue.'),
-            
+
             html.P('Scroll down for more info (or just start playing around to figure out how it works).'),],
-            
+
             style = {'width': '85%', 'textAlign': 'center', 'display': 'inline-block'})
-        
+
     # Wrap up for top text container
     ],
-    style={'width': '100%', 'textAlign': 'center', 'display': 'inline-block'}), 
-    
-    
+    style={'width': '100%', 'textAlign': 'center', 'display': 'inline-block'}),
+
+
     html.Br(),
-    html.Hr(),    
-    
-    
+    html.Hr(),
+
+
     # Athlete selection container
     html.Div([
-        
+
         # Left side
         html.Div([
             html.Div([
@@ -121,7 +121,7 @@ app.layout = html.Div([
                 ),
 
                 dcc.Dropdown(id='year-dropdown-left'),
-                
+
                 dcc.Dropdown(id='athlete-dropdown-left')
             ],
             style={'width': '75%', 'display': 'inline-block'}),
@@ -139,25 +139,25 @@ app.layout = html.Div([
                 ),
 
                 dcc.Dropdown(id='year-dropdown-right'),
-                
+
                 dcc.Dropdown(id='athlete-dropdown-right')
             ],
             style={'width': '75%', 'display': 'inline-block'}),
         ],
         style={'width': '45%', 'textAlign': 'center', 'display': 'inline-block'}),
-        
-            
+
+
         html.Br(),
         html.Hr(),
-        
+
     # Wrap up for athlete selection container
     ],
     style={'width': '90%', 'textAlign': 'center', 'display': 'inline-block'}),
-    
-    
+
+
     # Outer plot container (for all plots)
     html.Div([
-        
+
         # Distribution container
         html.Div([
             # (left)
@@ -181,7 +181,7 @@ app.layout = html.Div([
             html.Div([
                 html.Div([
                     html.H6('Select second distribution:', style={'color': 'rgb(205, 12, 24)'}),
-                    dcc.RadioItems( 
+                    dcc.RadioItems(
                         id='dist-radio-right',
                         options=[{'label': i, 'value': i} for i in ['All', 'Gender', 'Division']],
                         value='All'
@@ -197,7 +197,7 @@ app.layout = html.Div([
 
         html.Br(),
         html.Hr(),
-        
+
         # Radio buttons to select sport
         html.Div([
             html.Div([
@@ -210,60 +210,60 @@ app.layout = html.Div([
                 )
             ],
                 style={'width': '80%', 'textAlign': 'left', 'display': 'inline-block'})
-        ], 
-            style = {'width': '100%', 'textAlign': 'center', 'display': 'inline-block'}),        
-        
+        ],
+            style = {'width': '100%', 'textAlign': 'center', 'display': 'inline-block'}),
+
         html.Br(), html.Br(),
-        
+
         # Text comparing speeds
         html.Div(id='comparison-text'),
-         
+
         # Boxplot container
         html.Div([
             dcc.Graph(id='boxplot-1')
         ],
-            style={'width': '80%', 'textAlign': 'center', 'display': 'inline-block'}),        
+            style={'width': '80%', 'textAlign': 'center', 'display': 'inline-block'}),
 
         # Athlete percentiles
         html.Div(id='percentile-text'),
-          
+
         # Histogram container
         html.Div([
             dcc.Graph(id='histogram-main')
         ],
             style={'width': '80%', 'textAlign': 'center', 'display': 'inline-block'}),
 
-            
+
     # Wrap up for outer plot container
     ],
         style={'width': '90%', 'textAlign': 'center', 'display': 'inline-block'}
     ),
-    
+
     html.Br(),
     html.Hr(),
-    
+
     # More info text container
     html.Div([
         html.Div([
-        
+
             html.H2('More Info'),
-            
+
             html.P('Select a sport to explore using the radio buttons above the first plot. `finish` is the overall race time.  Individual sport times come directly from the available results data, so some races may have separate transition times (`t1` and `t2`), whereas others may have transition time as part of `swim`, `bike`, or `run` times.'),
-            
+
             html.P('You can also select a subset of race data to compare each athlete\'s times against. The default selection is `All`, which is the full race data. `Gender` lets you compare the athlete\'s times to just women\'s or men\'s times, and `Division` lets you compare the athlete\'s times to those from a single division (e.g., `F30-39` is females age 30-39). For each subset, the default selection is the group that the selected athlete is in.'),
 
             html.P('The boxplots and histograms can help give you a sense of where an athlete\'s times fell in the overall distribution of other athlete\'s in the race. Different races or race courses may be generally faster or slower, depending on factors like weather or hills. Also, different races attract participants with different levels of experience and ability. For example, the Hampton Ladies\' Triathlon attracts both experienced triathletes and complete beginners, whereas participants in the Rockwood By the Bay triathlon are on average faster and more experienced.')],
             style = {'width': '85%', 'textAlign': 'center', 'display': 'inline-block'})
-        
+
     # Wrap up for top text container
     ],
-    style={'width': '100%', 'textAlign': 'center', 'display': 'inline-block'}), 
+    style={'width': '100%', 'textAlign': 'center', 'display': 'inline-block'}),
 
 
     html.Br(),
     html.Hr()
-    
-    
+
+
 # Wrap up for full page container
 ],
     style = {'width': '100%', 'textAlign': 'center', 'display': 'inline-block'})
@@ -271,7 +271,7 @@ app.layout = html.Div([
 
 #------------#
 # Callbacks
-#------------#  
+#------------#
 
 # Set race year options based on selected race
 #   (left)
@@ -339,7 +339,7 @@ def set_year_value(athlete_options):
 # Set distribution dropdown options based on selection of All, Gender, or Division
 #   (left)
 @app.callback(
-    dash.dependencies.Output('dist-details-dropdown-left', 'options'), 
+    dash.dependencies.Output('dist-details-dropdown-left', 'options'),
     [dash.dependencies.Input('dist-radio-left', 'value'),
     dash.dependencies.Input('race-dropdown-left', 'value'),
     dash.dependencies.Input('year-dropdown-left', 'value')])
@@ -355,7 +355,7 @@ def set_dist_options_left(selected_dist_type, selected_race, selected_year):
 
 #   (right)
 @app.callback(
-    dash.dependencies.Output('dist-details-dropdown-right', 'options'), 
+    dash.dependencies.Output('dist-details-dropdown-right', 'options'),
     [dash.dependencies.Input('dist-radio-right', 'value'),
     dash.dependencies.Input('race-dropdown-right', 'value'),
     dash.dependencies.Input('year-dropdown-right', 'value')])
@@ -367,9 +367,9 @@ def set_dist_options_right(selected_dist_type, selected_race, selected_year):
     elif selected_dist_type == 'Division':
         return [{'label': i, 'value': i} for i in list(np.unique(eval(race_options[selected_race][selected_year][0])["division"]))]
     else:
-        return [{'label': 'CONFUZZLED', 'value': 'CONFUZZLED'}]    
-    
-    
+        return [{'label': 'CONFUZZLED', 'value': 'CONFUZZLED'}]
+
+
 # Set distribution dropdown initial value based on dropdown options and corresponding to selected athlete and dist type
 #   (left)
 @app.callback(
@@ -420,10 +420,10 @@ def set_dist_value(selected_race, selected_year, selected_athlete,
      dash.dependencies.Input('dist-radio-right', 'value'),
      dash.dependencies.Input('dist-details-dropdown-right', 'value'),
      dash.dependencies.Input('subset-sport', 'value')])
-def update_histogram_main(selected_race_left, selected_year_left, selected_athlete_left, 
-                          selected_dist_type_left, selected_dist_value_left,  
-                          selected_race_right, selected_year_right, selected_athlete_right, 
-                          selected_dist_type_right, selected_dist_value_right,  
+def update_histogram_main(selected_race_left, selected_year_left, selected_athlete_left,
+                          selected_dist_type_left, selected_dist_value_left,
+                          selected_race_right, selected_year_right, selected_athlete_right,
+                          selected_dist_type_right, selected_dist_value_right,
                           selected_sport):
     # Pull selected race/year dataframe
     df_left = eval(race_options[selected_race_left][selected_year_left][0])
@@ -459,13 +459,13 @@ def update_histogram_main(selected_race_left, selected_year_left, selected_athle
         np.histogram(race_times_left, bins = nbins)[0].max(),
         np.histogram(race_times_right, bins = nbins)[0].max()
     )
-    # Create plot    
+    # Create plot
     return {
         'data': [go.Histogram(
-                    x=race_times_left, 
+                    x=race_times_left,
                     xbins=dict(
-                        start=np.min(race_times_left), 
-                        size=(np.max(race_times_left)-np.min(race_times_left))/nbins, 
+                        start=np.min(race_times_left),
+                        size=(np.max(race_times_left)-np.min(race_times_left))/nbins,
                         end=np.max(race_times_left)),
                     name = selected_race_left + ' ' + selected_year_left + ': ' + selected_dist_value_left,
                     marker=dict(color='rgb(22, 96, 167)'),
@@ -473,10 +473,10 @@ def update_histogram_main(selected_race_left, selected_year_left, selected_athle
                     legendgroup = 'Person1'
                 ),
                  go.Histogram(
-                    x=race_times_right, 
+                    x=race_times_right,
                     xbins=dict(
-                        start=np.min(race_times_right), 
-                        size=(np.max(race_times_right)-np.min(race_times_right))/nbins, 
+                        start=np.min(race_times_right),
+                        size=(np.max(race_times_right)-np.min(race_times_right))/nbins,
                         end=np.max(race_times_right)),
                     name = selected_race_right + ' ' + selected_year_right + ': ' + selected_dist_value_right,
                     marker=dict(color='rgb(205, 12, 24)'),
@@ -514,7 +514,7 @@ def update_histogram_main(selected_race_left, selected_year_left, selected_athle
             title = selected_sport,
             barmode = 'overlay'
         )
-    }    
+    }
 
 
 # Comparison text
@@ -575,7 +575,7 @@ def update_output_div(selected_race_left, selected_year_left, selected_athlete_l
         mylayout = html.Div([
             html.P("I'm sorry, this is confusing.")
             ])
-    
+
     return mylayout
     # return html.Div([html.P("There be words here!")])
 
@@ -593,10 +593,10 @@ def update_output_div(selected_race_left, selected_year_left, selected_athlete_l
      dash.dependencies.Input('dist-radio-right', 'value'),
      dash.dependencies.Input('dist-details-dropdown-right', 'value'),
      dash.dependencies.Input('subset-sport', 'value')])
-def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_left, 
-                     selected_dist_type_left, selected_dist_value_left,  
+def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_left,
+                     selected_dist_type_left, selected_dist_value_left,
                      selected_race_right, selected_year_right, selected_athlete_right,
-                          selected_dist_type_right, selected_dist_value_right,  
+                          selected_dist_type_right, selected_dist_value_right,
                           selected_sport):
     # Pull selected race/year dataframe
     df_left = eval(race_options[selected_race_left][selected_year_left][0])
@@ -619,14 +619,14 @@ def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_le
     elif selected_dist_type_right == 'Division':
         df_right_subset = df_right[df_right['division']==selected_dist_value_right]
     else:  # if 'All' is selected, or...anything else?
-        df_right_subset = df_right        
+        df_right_subset = df_right
     # Get specific athlete times for selected sport
     athlete_time_left = df_left[df_left['name']==selected_athlete_left][selected_sport].values[0]
     athlete_time_right = df_right[df_right['name']==selected_athlete_right][selected_sport].values[0]
     # Get all times for each histogram
     race_times_left = df_left_subset[selected_sport].dropna()
     race_times_right = df_right_subset[selected_sport].dropna()
-    # Create plot    
+    # Create plot
     trace0 = go.Box(
         x = race_times_left,
         jitter = 0.4,
@@ -657,7 +657,7 @@ def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_le
                                    width = 2)),
          name = selected_athlete_left,
          legendgroup = 'athlete_left'
-         )   
+         )
     trace3 = go.Scatter(
          x = [athlete_time_right],
          y = [selected_athlete_right + ' '],
@@ -668,7 +668,7 @@ def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_le
                                    width = 2)),
          name = selected_athlete_right,
          legendgroup = 'athlete_right'
-         )       
+         )
     return {
         'data': [trace0, trace2, trace1, trace3],
         'layout': go.Layout(
@@ -681,7 +681,7 @@ def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_le
             #     'overlaying': 'y'
             # }
         )
-    }   
+    }
 
 # Percentile text
 @app.callback(
@@ -728,7 +728,7 @@ def update_output_div(selected_race_left, selected_year_left, selected_athlete_l
         html.P("{0} ({1} {2}): {3} percentile ({4} out of {5})".format(
             selected_athlete_left,
             selected_race_left,
-            selected_year_left, 
+            selected_year_left,
             thify(athlete_percentile_left),
             athlete_rank_left,
             len(all_times_left))),
@@ -736,13 +736,13 @@ def update_output_div(selected_race_left, selected_year_left, selected_athlete_l
         html.P("{0} ({1} {2}): {3} percentile ({4} out of {5})".format(
             selected_athlete_right,
             selected_race_right,
-            selected_year_right, 
+            selected_year_right,
             thify(athlete_percentile_right),
             athlete_rank_right,
             len(all_times_right)))
 
         ])
-    
+
     return mylayout
 
 
