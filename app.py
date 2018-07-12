@@ -417,106 +417,6 @@ def set_dist_value(selected_race, selected_year, selected_athlete,
         return list(athlete_row[selected_dist_type.lower()])[0]
 
 
-
-
-# Histogram plot
-@app.callback(
-    dash.dependencies.Output('histogram-main', 'figure'),
-    [dash.dependencies.Input('race-dropdown-left', 'value'),
-     dash.dependencies.Input('year-dropdown-left', 'value'),
-     dash.dependencies.Input('athlete-dropdown-left', 'value'),
-     dash.dependencies.Input('dist-radio-left', 'value'),
-     dash.dependencies.Input('dist-details-dropdown-left', 'value'),
-     dash.dependencies.Input('race-dropdown-right', 'value'),
-     dash.dependencies.Input('year-dropdown-right', 'value'),
-     dash.dependencies.Input('athlete-dropdown-right', 'value'),
-     dash.dependencies.Input('dist-radio-right', 'value'),
-     dash.dependencies.Input('dist-details-dropdown-right', 'value'),
-     dash.dependencies.Input('subset-sport', 'value')])
-def update_histogram_main(selected_race_left, selected_year_left, selected_athlete_left,
-                          selected_dist_type_left, selected_dist_value_left,
-                          selected_race_right, selected_year_right, selected_athlete_right,
-                          selected_dist_type_right, selected_dist_value_right,
-                          selected_sport):
-    # Pull selected race/year dataframe
-    df_left = eval(race_options[selected_race_left][selected_year_left][0])
-    df_right = eval(race_options[selected_race_right][selected_year_right][0])
-    # Get specific athlete times for selected sport
-    athlete_time_left = df_left[df_left['name']==selected_athlete_left][selected_sport].values[0]
-    athlete_time_right = df_right[df_right['name']==selected_athlete_right][selected_sport].values[0]
-    # Get all times for selected sport and subset (for each histogram)
-    if (selected_dist_type_left == 'All'):
-        all_times_left = df_left[selected_sport].dropna()
-    else:
-        all_times_left = df_left[df_left[selected_dist_type_left.lower()]==selected_dist_value_left.lower()][selected_sport].dropna()
-    if (selected_dist_type_right == 'All'):
-        all_times_right = df_right[selected_sport].dropna()
-    else:
-        all_times_right = df_right[df_right[selected_dist_type_right.lower()]==selected_dist_value_right.lower()][selected_sport].dropna()
-    # Set bins and find maximum value for y axis
-    nbins = 12
-    ymax = max(
-        np.histogram(all_times_left, bins = nbins)[0].max(),
-        np.histogram(all_times_right, bins = nbins)[0].max()
-    )
-    # Create plot
-    return {
-        'data': [go.Histogram(
-                    x=all_times_left,
-                    xbins=dict(
-                        start=np.min(all_times_left),
-                        size=(np.max(all_times_left)-np.min(all_times_left))/nbins,
-                        end=np.max(all_times_left)),
-                    name = selected_race_left + ' ' + selected_year_left + ': ' + selected_dist_value_left,
-                    marker=dict(color='rgb(22, 96, 167)'),
-                    opacity = 0.5,
-                    legendgroup = 'Person1'
-                ),
-                 go.Histogram(
-                    x=all_times_right,
-                    xbins=dict(
-                        start=np.min(all_times_right),
-                        size=(np.max(all_times_right)-np.min(all_times_right))/nbins,
-                        end=np.max(all_times_right)),
-                    name = selected_race_right + ' ' + selected_year_right + ': ' + selected_dist_value_right,
-                    marker=dict(color='rgb(205, 12, 24)'),
-                    opacity = 0.5,
-                    legendgroup = 'Person2'
-                ),
-                 go.Scatter(
-                     x = [athlete_time_left, athlete_time_left],
-                     y = [0, ymax],  # Draw to max y value of histogram
-                     mode = 'lines',
-                     name = selected_athlete_left,
-                     legendgroup = 'Person1',
-                     line = dict(
-                         color = ('rgb(22, 96, 167)'),
-                         width = 2)
-                 ),
-                 go.Scatter(
-                     x = [athlete_time_right, athlete_time_right],
-                     y = [0, ymax],  # Draw to max y value of histogram
-                     mode = 'lines',
-                     name = selected_athlete_right,
-                     legendgroup = 'Person2',
-                     line = dict(
-                         color = ('rgb(205, 12, 24)'),
-                         width = 2)
-                 )
-                ],
-        'layout': go.Layout(
-            xaxis={
-                'title': selected_sport + " (min)"
-            },
-            yaxis={
-                'title': 'Frequency'
-            },
-            title = selected_sport,
-            barmode = 'overlay'
-        )
-    }
-
-
 # Comparison text
 @app.callback(
     dash.dependencies.Output(component_id='comparison-text', component_property='children'),
@@ -579,6 +479,7 @@ def update_output_div(selected_race_left, selected_year_left, selected_athlete_l
     return mylayout
     # return html.Div([html.P("There be words here!")])
 
+
 # Boxplot
 @app.callback(
     dash.dependencies.Output('boxplot-1', 'figure'),
@@ -619,13 +520,11 @@ def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_le
         np.histogram(all_times_left, bins = nbins)[0].max(),
         np.histogram(all_times_right, bins = nbins)[0].max()
     )
-
     # Calculate athletes' rank and percentile
     athlete_rank_left = (all_times_left < athlete_time_left).values.sum() + 1
     athlete_percentile_left = int(round((athlete_rank_left/len(all_times_left))*100))
     athlete_rank_right = (all_times_right < athlete_time_right).values.sum() + 1
     athlete_percentile_right = int(round((athlete_rank_right/len(all_times_right))*100))
-
     # Create plot
     trace0 = go.Box(
         x = all_times_left,
@@ -707,6 +606,118 @@ def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_le
             # }
         )
     }
+
+
+# Histogram plot
+@app.callback(
+    dash.dependencies.Output('histogram-main', 'figure'),
+    [dash.dependencies.Input('race-dropdown-left', 'value'),
+     dash.dependencies.Input('year-dropdown-left', 'value'),
+     dash.dependencies.Input('athlete-dropdown-left', 'value'),
+     dash.dependencies.Input('dist-radio-left', 'value'),
+     dash.dependencies.Input('dist-details-dropdown-left', 'value'),
+     dash.dependencies.Input('race-dropdown-right', 'value'),
+     dash.dependencies.Input('year-dropdown-right', 'value'),
+     dash.dependencies.Input('athlete-dropdown-right', 'value'),
+     dash.dependencies.Input('dist-radio-right', 'value'),
+     dash.dependencies.Input('dist-details-dropdown-right', 'value'),
+     dash.dependencies.Input('subset-sport', 'value')])
+def update_histogram_main(selected_race_left, selected_year_left, selected_athlete_left,
+                          selected_dist_type_left, selected_dist_value_left,
+                          selected_race_right, selected_year_right, selected_athlete_right,
+                          selected_dist_type_right, selected_dist_value_right,
+                          selected_sport):
+    # Pull selected race/year dataframe
+    df_left = eval(race_options[selected_race_left][selected_year_left][0])
+    df_right = eval(race_options[selected_race_right][selected_year_right][0])
+    # Get specific athlete times for selected sport
+    athlete_time_left = df_left[df_left['name']==selected_athlete_left][selected_sport].values[0]
+    athlete_time_right = df_right[df_right['name']==selected_athlete_right][selected_sport].values[0]
+    # Get all times for selected sport and subset (for each histogram)
+    if (selected_dist_type_left == 'All'):
+        all_times_left = df_left[selected_sport].dropna()
+    else:
+        all_times_left = df_left[df_left[selected_dist_type_left.lower()]==selected_dist_value_left.lower()][selected_sport].dropna()
+    if (selected_dist_type_right == 'All'):
+        all_times_right = df_right[selected_sport].dropna()
+    else:
+        all_times_right = df_right[df_right[selected_dist_type_right.lower()]==selected_dist_value_right.lower()][selected_sport].dropna()
+    # Set bins and find maximum value for y axis
+    nbins = 12
+    ymax = max(
+        np.histogram(all_times_left, bins = nbins)[0].max(),
+        np.histogram(all_times_right, bins = nbins)[0].max()
+    )
+    # Calculate athletes' rank and percentile
+    athlete_rank_left = (all_times_left < athlete_time_left).values.sum() + 1
+    athlete_percentile_left = int(round((athlete_rank_left/len(all_times_left))*100))
+    athlete_rank_right = (all_times_right < athlete_time_right).values.sum() + 1
+    athlete_percentile_right = int(round((athlete_rank_right/len(all_times_right))*100))
+    # Create plot
+    return {
+        'data': [go.Histogram(
+                    x=all_times_left,
+                    xbins=dict(
+                        start=np.min(all_times_left),
+                        size=(np.max(all_times_left)-np.min(all_times_left))/nbins,
+                        end=np.max(all_times_left)),
+                    name = selected_race_left + ' ' + selected_year_left + ': ' + selected_dist_value_left,
+                    marker=dict(color='rgb(22, 96, 167)'),
+                    opacity = 0.5,
+                    legendgroup = 'Person1'
+                ),
+                 go.Histogram(
+                    x=all_times_right,
+                    xbins=dict(
+                        start=np.min(all_times_right),
+                        size=(np.max(all_times_right)-np.min(all_times_right))/nbins,
+                        end=np.max(all_times_right)),
+                    name = selected_race_right + ' ' + selected_year_right + ': ' + selected_dist_value_right,
+                    marker=dict(color='rgb(205, 12, 24)'),
+                    opacity = 0.5,
+                    legendgroup = 'Person2'
+                ),
+                 go.Scatter(
+                     x = [athlete_time_left, athlete_time_left],
+                     y = [0, ymax],  # Draw to max y value of histogram
+                     mode = 'lines',
+                     name = selected_athlete_left + '<br>' +
+                     "{0} percentile ({1} out of {2})".format(
+                         convert_numeric_to_ordinal(athlete_percentile_left),
+                         athlete_rank_left,
+                         len(all_times_left)),
+                     legendgroup = 'Person1',
+                     line = dict(
+                         color = ('rgb(22, 96, 167)'),
+                         width = 2)
+                 ),
+                 go.Scatter(
+                     x = [athlete_time_right, athlete_time_right],
+                     y = [0, ymax],  # Draw to max y value of histogram
+                     mode = 'lines',
+                     name = selected_athlete_right + '<br>' +
+                     "{0} percentile ({1} out of {2})".format(
+                         convert_numeric_to_ordinal(athlete_percentile_right),
+                         athlete_rank_right,
+                         len(all_times_right)),
+                     legendgroup = 'Person2',
+                     line = dict(
+                         color = ('rgb(205, 12, 24)'),
+                         width = 2)
+                 )
+                ],
+        'layout': go.Layout(
+            xaxis={
+                'title': selected_sport + " (min)"
+            },
+            yaxis={
+                'title': 'Frequency'
+            },
+            title = selected_sport,
+            barmode = 'overlay'
+        )
+    }
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
