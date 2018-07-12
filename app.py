@@ -25,6 +25,7 @@ rockwood18sprint = pd.read_csv('Data_output/results_rockwood18sprint.csv')
 available_sports = np.array(['finish', 'swim', 'bike', 'run', 't1', 't2'])
 available_distributions = np.array(['All', 'Gender', 'Division'])
 
+# Set up dictionary to access df names based on race and year selections
 race_options = {
     'Rockwood': {
         '2017': ["rockwood17sprint"],
@@ -36,10 +37,14 @@ race_options = {
     }
 }
 
-# eval(race_dataframes["Rockwood"]["2018"][0])
-# gives me the dataframe `rockwood18sprint`
+# eval(race_dataframes['Rockwood']['2018'][0])
+# gives the dataframe `rockwood18sprint`
 
 def convert_min_to_time(time):
+    """
+    Convert a numeric representing decimal minutes to a character string
+    in mm:ss or hh:mm:ss format as appropriate.
+    """
     hours = int(time/60)
     minutes = time - (hours*60)
     seconds = round((time - int(time))*60)
@@ -49,8 +54,11 @@ def convert_min_to_time(time):
     else:
         return("%02d:%02d" % (minutes, seconds))
 
-# Make numbers into strings with the appropriate comparison suffix ('1st', '2nd', etc.)
-def thify(value):
+def convert_numeric_to_ordinal(value):
+    """
+    Convert a number into a string that has the appropriate suffix
+    for an ordinal number (e.g., 1 -> 1st, 2 -> 2nd, etc.).
+    """
     lastchar = int('{0}'.format(value)[-1])
     if (lastchar == 1):
         suffix = 'st'
@@ -73,7 +81,7 @@ app.layout = html.Div([
 
     # Header
 
-    html.H1(children='Triathlon Comparison Tool',
+    html.H1(children='Triathlon Stats Comparison Tool',
             style={
                 'textAlign': 'center'
     }),
@@ -225,8 +233,12 @@ app.layout = html.Div([
         ],
             style={'width': '80%', 'textAlign': 'center', 'display': 'inline-block'}),
 
-        # Athlete percentiles
-        html.Div(id='percentile-text'),
+        html.Br(),
+
+        html.Div([
+            html.Hr()
+        ],
+            style = {'width': '60%', 'textAlign': 'center', 'display': 'inline-block'}),
 
         # Histogram container
         html.Div([
@@ -253,7 +265,7 @@ app.layout = html.Div([
 
             html.P('You can also select a subset of race data to compare each athlete\'s times against. The default selection is `All`, which is the full race data. `Gender` lets you compare the athlete\'s times to just women\'s or men\'s times, and `Division` lets you compare the athlete\'s times to those from a single division (e.g., `F30-39` is females age 30-39). For each subset, the default selection is the group that the selected athlete is in.'),
 
-            html.P('The boxplots and histograms can help give you a sense of where an athlete\'s times fell in the overall distribution of other athlete\'s in the race. Different races or race courses may be generally faster or slower, depending on factors like weather or hills. Also, different races attract participants with different levels of experience and ability. For example, the Hampton Ladies\' Triathlon attracts both experienced triathletes and complete beginners, whereas participants in the Rockwood By the Bay triathlon are on average faster and more experienced.')],
+            html.P('The boxplots and histograms can help give you a sense of where an athlete\'s times fell in the overall distribution of other athletes in the race. Different races or race courses may be generally faster or slower, depending on factors like weather or hills. Also, different races attract participants with different levels of experience and ability. For example, the Hampton Ladies\' Triathlon attracts both experienced triathletes and complete beginners, whereas participants in the Rockwood By the Bay triathlon are on average faster and more experienced.')],
             style = {'width': '85%', 'textAlign': 'center', 'display': 'inline-block'})
 
     # Wrap up for top text container
@@ -429,56 +441,43 @@ def update_histogram_main(selected_race_left, selected_year_left, selected_athle
     # Pull selected race/year dataframe
     df_left = eval(race_options[selected_race_left][selected_year_left][0])
     df_right = eval(race_options[selected_race_right][selected_year_right][0])
-    # Subset based on distribution
-    # Left side
-    if selected_dist_type_left == 'All':
-        df_left_subset = df_left
-    elif selected_dist_type_left == 'Gender':
-        df_left_subset = df_left[df_left['gender']==selected_dist_value_left]
-    elif selected_dist_type_left == 'Division':
-        df_left_subset = df_left[df_left['division']==selected_dist_value_left]
-    else:  # if 'All' is selected, or...anything else?
-        df_left_subset = df_left
-    # Right side
-    if selected_dist_type_right == 'All':
-        df_right_subset = df_right
-    elif selected_dist_type_right == 'Gender':
-        df_right_subset = df_right[df_right['gender']==selected_dist_value_right]
-    elif selected_dist_type_right == 'Division':
-        df_right_subset = df_right[df_right['division']==selected_dist_value_right]
-    else:  # if 'All' is selected, or...anything else?
-        df_right_subset = df_right
     # Get specific athlete times for selected sport
     athlete_time_left = df_left[df_left['name']==selected_athlete_left][selected_sport].values[0]
     athlete_time_right = df_right[df_right['name']==selected_athlete_right][selected_sport].values[0]
-    # Get all times for each histogram
-    race_times_left = df_left_subset[selected_sport].dropna()
-    race_times_right = df_right_subset[selected_sport].dropna()
+    # Get all times for selected sport and subset (for each histogram)
+    if (selected_dist_type_left == 'All'):
+        all_times_left = df_left[selected_sport].dropna()
+    else:
+        all_times_left = df_left[df_left[selected_dist_type_left.lower()]==selected_dist_value_left.lower()][selected_sport].dropna()
+    if (selected_dist_type_right == 'All'):
+        all_times_right = df_right[selected_sport].dropna()
+    else:
+        all_times_right = df_right[df_right[selected_dist_type_right.lower()]==selected_dist_value_right.lower()][selected_sport].dropna()
     # Set bins and find maximum value for y axis
     nbins = 12
     ymax = max(
-        np.histogram(race_times_left, bins = nbins)[0].max(),
-        np.histogram(race_times_right, bins = nbins)[0].max()
+        np.histogram(all_times_left, bins = nbins)[0].max(),
+        np.histogram(all_times_right, bins = nbins)[0].max()
     )
     # Create plot
     return {
         'data': [go.Histogram(
-                    x=race_times_left,
+                    x=all_times_left,
                     xbins=dict(
-                        start=np.min(race_times_left),
-                        size=(np.max(race_times_left)-np.min(race_times_left))/nbins,
-                        end=np.max(race_times_left)),
+                        start=np.min(all_times_left),
+                        size=(np.max(all_times_left)-np.min(all_times_left))/nbins,
+                        end=np.max(all_times_left)),
                     name = selected_race_left + ' ' + selected_year_left + ': ' + selected_dist_value_left,
                     marker=dict(color='rgb(22, 96, 167)'),
                     opacity = 0.5,
                     legendgroup = 'Person1'
                 ),
                  go.Histogram(
-                    x=race_times_right,
+                    x=all_times_right,
                     xbins=dict(
-                        start=np.min(race_times_right),
-                        size=(np.max(race_times_right)-np.min(race_times_right))/nbins,
-                        end=np.max(race_times_right)),
+                        start=np.min(all_times_right),
+                        size=(np.max(all_times_right)-np.min(all_times_right))/nbins,
+                        end=np.max(all_times_right)),
                     name = selected_race_right + ' ' + selected_year_right + ': ' + selected_dist_value_right,
                     marker=dict(color='rgb(205, 12, 24)'),
                     opacity = 0.5,
@@ -580,7 +579,7 @@ def update_output_div(selected_race_left, selected_year_left, selected_athlete_l
     return mylayout
     # return html.Div([html.P("There be words here!")])
 
-# Boxplot 1
+# Boxplot
 @app.callback(
     dash.dependencies.Output('boxplot-1', 'figure'),
     [dash.dependencies.Input('race-dropdown-left', 'value'),
@@ -602,34 +601,34 @@ def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_le
     # Pull selected race/year dataframe
     df_left = eval(race_options[selected_race_left][selected_year_left][0])
     df_right = eval(race_options[selected_race_right][selected_year_right][0])
-    # Subset based on distribution
-    # Left side
-    if selected_dist_type_left == 'All':
-        df_left_subset = df_left
-    elif selected_dist_type_left == 'Gender':
-        df_left_subset = df_left[df_left['gender']==selected_dist_value_left]
-    elif selected_dist_type_left == 'Division':
-        df_left_subset = df_left[df_left['division']==selected_dist_value_left]
-    else:  # if 'All' is selected, or...anything else?
-        df_left_subset = df_left
-    # Right side
-    if selected_dist_type_right == 'All':
-        df_right_subset = df_right
-    elif selected_dist_type_right == 'Gender':
-        df_right_subset = df_right[df_right['gender']==selected_dist_value_right]
-    elif selected_dist_type_right == 'Division':
-        df_right_subset = df_right[df_right['division']==selected_dist_value_right]
-    else:  # if 'All' is selected, or...anything else?
-        df_right_subset = df_right
     # Get specific athlete times for selected sport
     athlete_time_left = df_left[df_left['name']==selected_athlete_left][selected_sport].values[0]
     athlete_time_right = df_right[df_right['name']==selected_athlete_right][selected_sport].values[0]
-    # Get all times for each histogram
-    race_times_left = df_left_subset[selected_sport].dropna()
-    race_times_right = df_right_subset[selected_sport].dropna()
+    # Get all times for selected sport and subset, using selected_dist_type to filter (for each histogram)
+    if (selected_dist_type_left == 'All'):
+        all_times_left = df_left[selected_sport].dropna()
+    else:
+        all_times_left = df_left[df_left[selected_dist_type_left.lower()]==selected_dist_value_left.lower()][selected_sport].dropna()
+    if (selected_dist_type_right == 'All'):
+        all_times_right = df_right[selected_sport].dropna()
+    else:
+        all_times_right = df_right[df_right[selected_dist_type_right.lower()]==selected_dist_value_right.lower()][selected_sport].dropna()
+    # Set bins and find maximum value for y axis
+    nbins = 12
+    ymax = max(
+        np.histogram(all_times_left, bins = nbins)[0].max(),
+        np.histogram(all_times_right, bins = nbins)[0].max()
+    )
+
+    # Calculate athletes' rank and percentile
+    athlete_rank_left = (all_times_left < athlete_time_left).values.sum() + 1
+    athlete_percentile_left = int(round((athlete_rank_left/len(all_times_left))*100))
+    athlete_rank_right = (all_times_right < athlete_time_right).values.sum() + 1
+    athlete_percentile_right = int(round((athlete_rank_right/len(all_times_right))*100))
+
     # Create plot
     trace0 = go.Box(
-        x = race_times_left,
+        x = all_times_left,
         jitter = 0.4,
         pointpos = 0,
         boxpoints = 'all',
@@ -639,7 +638,7 @@ def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_le
         legendgroup = "athlete_left"
                  )
     trace1 = go.Box(
-        x = race_times_right,
+        x = all_times_right,
         jitter = 0.4,
         pointpos = 0,
         boxpoints = 'all',
@@ -656,7 +655,11 @@ def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_le
                        color = 'rgb(115, 157, 198)',
                        line = dict(color = 'rgb(22, 96, 167)',
                                    width = 2)),
-         name = selected_athlete_left,
+         name = selected_athlete_left + '<br>' +
+         "{0} percentile ({1} out of {2})".format(
+             convert_numeric_to_ordinal(athlete_percentile_left),
+             athlete_rank_left,
+             len(all_times_left)),
          legendgroup = 'athlete_left'
          )
     trace3 = go.Scatter(
@@ -667,14 +670,35 @@ def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_le
                        color = 'rgb(246, 141, 141)',
                        line = dict(color = 'rgb(205, 12, 24)',
                                    width = 2)),
-         name = selected_athlete_right,
+         name = selected_athlete_right + '<br>' +
+         "{0} percentile ({1} out of {2})".format(
+             convert_numeric_to_ordinal(athlete_percentile_right),
+             athlete_rank_right,
+             len(all_times_right)),
          legendgroup = 'athlete_right'
          )
+    trace_blank = go.Scatter(
+         x = [athlete_time_right],
+         y = [' '],
+         mode = 'markers',
+         marker = dict(size = 0, color = 'rgb(255, 255, 255)'),
+         name = ' ',
+         legendgroup = 'blank'
+         )
     return {
-        'data': [trace0, trace2, trace1, trace3],
+        'data': [trace2, trace0, trace_blank, trace3, trace1],
         'layout': go.Layout(
             xaxis = {
                 'title': selected_sport + " (min)"
+            },
+            yaxis = {
+                'autorange': 'reversed'
+            },
+            legend = {
+                'traceorder': 'grouped+reversed'
+            },
+            margin = {
+                'l': 160
             },
             title = selected_sport
             #,
@@ -683,70 +707,6 @@ def update_boxplot_1(selected_race_left, selected_year_left, selected_athlete_le
             # }
         )
     }
-
-# Percentile text
-@app.callback(
-    dash.dependencies.Output(component_id='percentile-text', component_property='children'),
-    [dash.dependencies.Input('race-dropdown-left', 'value'),
-     dash.dependencies.Input('year-dropdown-left', 'value'),
-     dash.dependencies.Input('athlete-dropdown-left', 'value'),
-     dash.dependencies.Input('dist-radio-left', 'value'),
-     dash.dependencies.Input('dist-details-dropdown-left', 'value'),
-     dash.dependencies.Input('race-dropdown-right', 'value'),
-     dash.dependencies.Input('year-dropdown-right', 'value'),
-     dash.dependencies.Input('athlete-dropdown-right', 'value'),
-     dash.dependencies.Input('dist-radio-right', 'value'),
-     dash.dependencies.Input('dist-details-dropdown-right', 'value'),
-     dash.dependencies.Input('subset-sport', 'value')]
-)
-def update_output_div(selected_race_left, selected_year_left, selected_athlete_left,
-                      selected_dist_type_left, selected_dist_value_left,
-                      selected_race_right, selected_year_right, selected_athlete_right,
-                      selected_dist_type_right, selected_dist_value_right,
-                      selected_sport):
-    # Get dataframes
-    df_left = eval(race_options[selected_race_left][selected_year_left][0])
-    df_right = eval(race_options[selected_race_right][selected_year_right][0])
-    # Get specific athlete times for selected sport
-    athlete_time_left = df_left[df_left['name']==selected_athlete_left][selected_sport].values[0]
-    athlete_time_right = df_right[df_right['name']==selected_athlete_right][selected_sport].values[0]
-    # Get all times for selected sport and subset
-    if (selected_dist_type_left == 'All'):
-        all_times_left = df_left[selected_sport]
-    else:
-        all_times_left = df_left[df_left[selected_dist_type_left.lower()]==selected_dist_value_left.lower()][selected_sport]
-    if (selected_dist_type_right == 'All'):
-        all_times_right = df_right[selected_sport]
-    else:
-        all_times_right = df_right[df_right[selected_dist_type_right.lower()]==selected_dist_value_right.lower()][selected_sport]
-    # Calculate rank and percentile
-    athlete_rank_left = (all_times_left < athlete_time_left).values.sum() + 1
-    athlete_percentile_left = int(round((athlete_rank_left/len(all_times_left))*100))
-    athlete_rank_right = (all_times_right < athlete_time_right).values.sum() + 1
-    athlete_percentile_right = int(round((athlete_rank_right/len(all_times_right))*100))
-    # Define layout with created text
-    mylayout = html.Div([
-        html.P("{0} ({1} {2}): {3} percentile ({4} out of {5})".format(
-            selected_athlete_left,
-            selected_race_left,
-            selected_year_left,
-            thify(athlete_percentile_left),
-            athlete_rank_left,
-            len(all_times_left))),
-
-        html.P("{0} ({1} {2}): {3} percentile ({4} out of {5})".format(
-            selected_athlete_right,
-            selected_race_right,
-            selected_year_right,
-            thify(athlete_percentile_right),
-            athlete_rank_right,
-            len(all_times_right)))
-
-        ])
-
-    return mylayout
-
-
 
 if __name__ == '__main__':
     app.run_server(debug=True)
