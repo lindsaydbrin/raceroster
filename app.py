@@ -99,7 +99,9 @@ app.layout = html.Div([
 
             html.H2('What is this?'),
 
-            html.P('A triathlon is a race that includes swimming, biking, and running components, as well as transitions in between sports.  Triathletes tend to be an obsessive bunch who get very involved in analyzing and comparing race times - which, in my personal experience, usually involves a browser with multiple open tabs, a calculator (or Spotlight), and frustration that I don\'t have a histogram of all participants\' times. This tool was developed to address that. (Note that many triathletes also claim to do triathlons to eat and drink more, so the motivations are broad and wide-ranging.)'),
+            html.P(['A ',
+            html.A('triathlon', href='https://en.wikipedia.org/wiki/Triathlon'),
+            ' is a race that includes swimming, biking, and running components, as well as transitions in between sports.  Triathletes tend to be an obsessive bunch who get very involved in analyzing and comparing race times - which, in my personal experience, usually involves a browser with multiple open tabs, a calculator (or Spotlight), and frustration that I don\'t have a histogram of all participants\' times. This tool was developed to address that. (Note that many triathletes also claim to do triathlons to eat and drink more, so the motivations are broad and wide-ranging.)']),
 
             html.P('You can use this tool to compare triathlon race times between two athletes (or the same athlete between two different races or race years). Use the dropdown menus to select each race, year, and athlete. The athletes\' time will appear on the plots below, along with the times for other athletes in the same race. Data associated with the athlete on the left will be shown in red, and data associated with the athlete on the right will be shown in blue.'),
 
@@ -213,7 +215,7 @@ app.layout = html.Div([
                 html.H6('Select sport to compare:'),
                 dcc.RadioItems(
                     id='subset-sport',
-                    options=[{'label': i, 'value': i} for i in available_sports],
+                    options=[{'label': '{0}{1}'.format(i, '    '), 'value': i} for i in available_sports],
                     value='finish',
                     labelStyle={'display': 'inline-block'}
                 )
@@ -235,6 +237,7 @@ app.layout = html.Div([
 
         html.Br(),
 
+        # Narrower <hr>
         html.Div([
             html.Hr()
         ],
@@ -265,7 +268,53 @@ app.layout = html.Div([
 
             html.P('You can also select a subset of race data to compare each athlete\'s times against. The default selection is `All`, which is the full race data. `Gender` lets you compare the athlete\'s times to just women\'s or men\'s times, and `Division` lets you compare the athlete\'s times to those from a single division (e.g., `F30-39` is females age 30-39). For each subset, the default selection is the group that the selected athlete is in.'),
 
-            html.P('The boxplots and histograms can help give you a sense of where an athlete\'s times fell in the overall distribution of other athletes in the race. Different races or race courses may be generally faster or slower, depending on factors like weather or hills. Also, different races attract participants with different levels of experience and ability. For example, the Hampton Ladies\' Triathlon attracts both experienced triathletes and complete beginners, whereas participants in the Rockwood By the Bay triathlon are on average faster and more experienced.')],
+            html.P('The boxplots and histograms can help give you a sense of where an athlete\'s times fell in the overall distribution of other athletes in the race. Different races or race courses may be generally faster or slower, depending on factors like weather or hills. Also, different races attract participants with different levels of experience and ability. For example, the Hampton Ladies\' Triathlon attracts both experienced triathletes and complete beginners, whereas participants in the Rockwood By the Bay triathlon are on average faster and more experienced.'),
+
+            # Narrower <hr>
+            html.Div([
+                html.Hr()
+            ],
+                style = {'width': '60%', 'textAlign': 'center', 'display': 'inline-block'}),
+
+
+            html.H2('Races'),
+
+            html.P('The following races are currently available in this tool:'),
+
+            html.H4('Rockwood By the Bay'),
+
+            html.P([ 'The ', html.A('Rockwood by the Bay Triathlon', href = 'https://www.facebook.com/RockwoodbytheBayTriathlon/'), ' is the home race for the Fundy Extreme Triathlon Club, based in Saint John, NB, held in and around Saint John\'s beautiful Rockwood Park.',
+            html.Br(),
+            html.A('2017 Sprint Triathlon results', href = 'https://results.raceroster.com/results/7uqq4njwwzqnbn6q'),
+            html.Br(),
+            html.A('2018 Sprint Triathlon results', href = 'https://results.raceroster.com/results/syf4m4gy6sknmzc3?sub_event=13620&query_string=&gender_code=&per_page=500&division=&page=1'),
+            ]
+            ),
+
+            html.H4('Hampton Ladies\' Triathlon'),
+
+            html.P([ 'The ', html.A('Hampton Ladies\' Triathlon', href = 'https://fundysportstourism.com/hampton-ladies-triathlon/'), ' is an extremely welcoming, supportive, and fun triathlon held in Hampton, NB.',
+            html.Br(),
+            html.A('2017 Sprint Triathlon results', href = 'https://results.raceroster.com/results/sj47pnd6egmunhjt'),
+            html.Br(),
+            html.A('2018 Sprint Triathlon results', href = 'https://results.raceroster.com/results/wjvz7sruf3ngamgq'),
+            ]
+            ),
+
+            # Narrower <hr>
+            html.Div([
+                html.Hr()
+            ],
+                style = {'width': '60%', 'textAlign': 'center', 'display': 'inline-block'}),
+
+
+            html.H2('About me'),
+
+            html.P('My name is Lindsay Brin, and I am a data scientist with a background in biogeochemistry. I help businesses use their data to answer questions and find actionable insights.  For more info about my work, check out my website:'),
+
+            html.A('lindsaydbrin.com', href = 'http://www.lindsaydbrin.com'),
+
+            ],
             style = {'width': '85%', 'textAlign': 'center', 'display': 'inline-block'})
 
     # Wrap up for top text container
@@ -274,13 +323,19 @@ app.layout = html.Div([
 
 
     html.Br(),
-    html.Hr()
+    html.Hr(),
 
+    html.Div([
+        html.P('© Copyright Lindsay D Brin 2018')
+    ],
+        style = {'width': '90%', 'textAlign': 'left', 'display': 'inline-block'}),
+
+    html.Br(),
+    html.Br()
 
 # Wrap up for full page container
 ],
     style = {'width': '100%', 'textAlign': 'center', 'display': 'inline-block'})
-
 
 #------------#
 # Callbacks
