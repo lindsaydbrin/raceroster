@@ -107,7 +107,7 @@ app.layout = html.Div([
 
             html.P('You can use this tool to compare triathlon race times between two athletes (or the same athlete between two different races or race years). Use the dropdown menus to select each race, year, and athlete. The athletes\' time will appear on the plots below, along with the times for other athletes in the same race. Data associated with the athlete on the left will be shown in red, and data associated with the athlete on the right will be shown in blue.'),
 
-            html.P('Scroll down for more info (or just start playing around to figure out how it works).'),],
+            html.P('Scroll down for more info on the app, races, and my work (or just start playing around to figure out how it works).'),],
 
             style = {'width': '85%', 'textAlign': 'center', 'display': 'inline-block'})
 
@@ -266,6 +266,14 @@ app.layout = html.Div([
 
             html.H2('More Info'),
 
+            # Narrower <hr>
+            html.Div([
+                html.Hr()
+            ],
+                style = {'width': '30%', 'textAlign': 'center', 'display': 'inline-block'}),
+
+            html.H3('How to use this tool'),
+
             html.P('Select a sport to explore using the radio buttons above the first plot. `finish` is the overall race time.  Individual sport times come directly from the available results data, so some races may have separate transition times (`t1` and `t2`), whereas others may have transition time as part of `swim`, `bike`, or `run` times.'),
 
             html.P('You can also select a subset of race data to compare each athlete\'s times against. The default selection is `All`, which is the full race data. `Gender` lets you compare the athlete\'s times to just women\'s or men\'s times, and `Division` lets you compare the athlete\'s times to those from a single division (e.g., `F30-39` is females age 30-39). For each subset, the default selection is the group that the selected athlete is in.'),
@@ -278,8 +286,21 @@ app.layout = html.Div([
             ],
                 style = {'width': '60%', 'textAlign': 'center', 'display': 'inline-block'}),
 
+            html.H3('About the app'),
 
-            html.H2('Races'),
+            html.P(['This app was built using ',
+                html.A('Dash', href = 'https://plot.ly/products/dash/'),
+                ', a Plotly-created Python library for creating reactive web applications. (Dash is fun. I recommend it.)'
+            ]),
+
+            # Narrower <hr>
+            html.Div([
+                html.Hr()
+            ],
+                style = {'width': '60%', 'textAlign': 'center', 'display': 'inline-block'}),
+
+
+            html.H3('Races'),
 
             html.P('The following races are currently available in this tool:'),
 
@@ -310,9 +331,9 @@ app.layout = html.Div([
                 style = {'width': '60%', 'textAlign': 'center', 'display': 'inline-block'}),
 
 
-            html.H2('About me'),
+            html.H3('About me'),
 
-            html.P('My name is Lindsay Brin, and I am a data scientist with a background in biogeochemistry. I help businesses use their data to answer questions and find actionable insights.  For more info about my work, check out my website:'),
+            html.P('My name is Lindsay Brin, and I am a data scientist with a background in biogeochemistry. I help businesses use their data to answer questions and find actionable insights.  For more info about my teaching, writing, and work, check out my website:'),
 
             html.A('lindsaydbrin.com', href = 'http://www.lindsaydbrin.com'),
 
